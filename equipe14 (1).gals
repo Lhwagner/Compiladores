@@ -1,0 +1,167 @@
+#Options
+GenerateScanner = true
+GenerateParser = true
+Language = Java
+ScannerName = Lexico
+ParserName = Sintatico
+SemanticName = Semantico
+Package = teste
+ScannerCaseSensitive = true
+ScannerTable = Compact
+Input = String
+Parser = LL
+#RegularDefinitions
+palavra : (([A-Z] | [a-z][A-Z]?)(([a-z] | [0-9]) [A-Z]?)* | [A-Z])
+
+NumEsq : ([1-9][0-9]* | 0)
+
+
+#Tokens
+//Equipe 14 - Lucas Wagner, Ranieri.
+
+
+palavra_reservada: {palavra}
+pr_main = palavra_reservada: "main"
+pr_end = palavra_reservada: "end"
+pr_if = palavra_reservada: "if"
+pr_elif = palavra_reservada: "elif"
+pr_else = palavra_reservada: "else"
+pr_false = palavra_reservada: "false"
+pr_true = palavra_reservada: "true"
+pr_read = palavra_reservada: "read"
+pr_write = palavra_reservada: "write"
+pr_writeln = palavra_reservada: "writeln"
+pr_repeat = palavra_reservada: "repeat"
+pr_until = palavra_reservada: "until"
+pr_while = palavra_reservada: "while"
+
+//simbolo_especial: 
+"&&"  
+"||"  
+"!"  
+"=="  
+"!="  
+"<"  
+">"  
+"+"  
+"-"  
+"*" 
+"/" 
+","  
+";"  
+"="  
+"("  
+")"
+
+
+
+id : i_{palavra} | f_{palavra} | b_{palavra} | s_{palavra}
+
+constante_int : {NumEsq}
+
+constante_float : {NumEsq} "," ((0* [1-9]+)+ | 0)
+
+constante_string : \" ([^ \n \" '%']* | ('%' x )*)* \"
+
+comentario 
+:!">" "@" \n [^"@"]* \n "@" "<"
+
+caractere_de_formatação 
+:! [\s \t \n]
+#NonTerminals
+<main>
+<lista_de_instrucoes>
+<lista_de_instrucoes2>
+
+
+<instrucao>
+<instrucao1>
+<opcional>
+<lista_de_comandos>
+<lista_de_comandos2>
+<comando>
+<lista_de_identificadores>
+<lista_de_identificadores2>
+<lista_de_entrada>
+<lista_de_entrada2>
+<lista_de_expressoes>
+<lista_de_expressoes_2>
+<expressao>
+<write>
+<writeln>
+<repeat>
+<repeat_while>
+<repeat_until>
+<if>
+<elif>
+<else>
+<if_elif_else>
+<read>
+<end>
+<att>
+<expressao1>
+<elemento>
+<relacional>
+<relacional1>
+<operador_relacional>
+<aritmetica>
+<aritmetica1>
+<termo>
+<termo1>
+<fator> 
+#Grammar
+<main> ::= #100 pr_main <lista_de_instrucoes> <end> #101;
+
+<lista_de_instrucoes> ::= <instrucao> ";" <lista_de_instrucoes2>;
+<lista_de_instrucoes2> ::= <instrucao> ";" <lista_de_instrucoes2> | î;
+
+<instrucao> ::= <lista_de_identificadores> <instrucao1> | <read> | <write> | <writeln> | <repeat> | <if_elif_else>;
+<instrucao1> ::= #102 î | "=" <expressao> #103;
+
+<lista_de_identificadores> ::= id #104 <lista_de_identificadores2>;
+<lista_de_identificadores2> ::= î | "," <lista_de_identificadores>;
+
+<opcional> ::= constante_string #106 "," | î;
+
+<att>::= <lista_de_identificadores> "=" <expressao> #103;
+
+<read> ::= pr_read "(" <lista_de_entrada> ")";
+<write> ::= pr_write "(" <lista_de_expressoes> ")" ;
+<writeln> ::= pr_writeln "(" <lista_de_expressoes> ")" #107 ;
+<repeat> ::= <repeat_while>;
+<repeat_while> ::= #113 pr_repeat <lista_de_comandos> <repeat_until>;
+<repeat_until> ::= pr_until <expressao> #115 | pr_while <expressao> #114 ;
+
+<if> ::= pr_if <expressao> #109 <lista_de_comandos> ;
+<elif> ::= î | #110 pr_elif <expressao> #112 <lista_de_comandos> <elif>;
+<else> ::= pr_end | pr_else <lista_de_comandos> pr_end;
+
+<lista_de_entrada> ::=  <opcional> id #105 <lista_de_entrada2>;
+<lista_de_entrada2> ::= "," <lista_de_entrada> | î;
+
+<lista_de_expressoes> ::= <expressao> #108 <lista_de_expressoes_2>;
+<lista_de_expressoes_2> ::= "," <lista_de_expressoes> | î;
+
+<lista_de_comandos> ::= <comando> ";" <lista_de_comandos2>;
+<lista_de_comandos2> ::= <comando> ";" <lista_de_comandos2> | î;
+
+<if_elif_else> ::= <if> <elif> #110 <else> #111;
+
+<comando> ::= <read> | <write> | <writeln> | <repeat> | <att> | <if_elif_else>;
+
+
+<end> ::= pr_end;
+
+<expressao> ::= <elemento> <expressao1> ;
+<expressao1> ::= î | "&&" <elemento> #116 <expressao1> | "||" <elemento> #117 <expressao1> ;
+<elemento> ::= <relacional> | pr_true #118| pr_false #119| "!" <elemento> #120 ;
+<relacional> ::= <aritmetica> <relacional1> ;
+<relacional1> ::= î | <operador_relacional> #121 <aritmetica> #122 ;
+<operador_relacional>::= "==" | "!=" | "<" | ">" ;
+<aritmetica> ::= <termo> <aritmetica1> ;
+<aritmetica1> ::= î | "+" <termo> #123 <aritmetica1> | "-" <termo> #124 <aritmetica1> ;
+<termo> ::= <fator> <termo1> ;
+<termo1> ::= î | "*" <fator> #125 <termo1> | "/" <fator> #126 <termo1> ;
+<fator> ::= id #127| constante_int #128| constante_float #129| constante_string #130| "(" <expressao> ")" | "+" <fator> | "-" <fator> #131 ;
+
+
