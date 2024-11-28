@@ -54,7 +54,7 @@ public class Semantico implements Constants {
 			operador = token.getLexeme();
 			break;
 		case 122:
-			acao10();
+			acao122();
 			break;
 		case 118:
 			pilha_tipos.push(bool);
@@ -119,6 +119,9 @@ public class Semantico implements Constants {
 		case 25:
 			acao25();
 			break;
+		case 102:
+			acao102(token);
+			break;
 		case 103:
 			acao103();
 			break;
@@ -131,14 +134,21 @@ public class Semantico implements Constants {
 		case 111:
 			acao111();
 			break;
+		case 112:
+            acao112();
+            break;
 		case 114:
 			acao114();
 			break;
 		case 113:
 			acao113();
 			break;
-		case 32:
-			acao32(token.getLexeme());
+		case 115:
+            acao115();
+            break;
+		case 106:
+			codigo.append("ldstr ").append(token.getLexeme()).append("\n");
+            codigo.append("call void [mscorlib]System.Console::Write("+ string +")").append("\n");
 			break;
 		case 110:
 			acao110();
@@ -155,16 +165,20 @@ public class Semantico implements Constants {
 		codigo.append("br " + rotuloDesempilhado1 + "\n");
 		codigo.append(rotuloDesempilhado2 + ":" + "\n");
 	}
+	
+	private void acao112() {
+	    String novoRotulo = "r" + contadorRotulo;
+	    contadorRotulo++; 
+	    codigo.append("brfalse ").append(novoRotulo).append("\n");
+	    pilha_rotulos.push(novoRotulo);
+	}
+	
+	private void acao115() {
+	    // Desempilhar o rótulo correspondente ao início do bloco de repetição
+	    String rotuloDesempilhado = pilha_rotulos.pop();
 
-	private void acao32(String lexema) {
-		String rotulo = "r" + contadorRotulo;
-		if (lexema.equalsIgnoreCase("true")) {
-			codigo.append("brfalse " + rotulo + "\n");
-		} else {
-			codigo.append("brtrue " + rotulo + "\n");
-		}
-		pilha_rotulos.push(rotulo);
-		contadorRotulo++;
+	    // Gerar código para desviar para o comando de repetição se a expressão for falsa
+	    codigo.append("brfalse ").append(rotuloDesempilhado).append("\n");
 	}
 
 	private void acao113() {
@@ -280,6 +294,19 @@ public class Semantico implements Constants {
 		codigo.append("stloc " + variavel + "\n");
 		lista_id.add(variavel);
 	}
+	
+	private void acao102(Token token) throws SemanticError {
+	    for (String identificador : lista_id) {
+	        if (tabela_simbolos.containsKey(identificador)) {
+	            throw new SemanticError("Erro semântico: Identificador \"" + identificador + "\" já declarado na linha " + token.getPosition());
+	        } else {
+	            String tipo = getTipoVariavel(identificador);
+	            tabela_simbolos.put(identificador, tipo);
+	            codigo.append(".locals (").append(tipo).append(" ").append(identificador).append(")").append("\n");
+	        }
+	    }
+	    lista_id.clear();
+	}
 
 	private void acao24() throws SemanticError {
 		String tipoPilha = pilha_tipos.pop();
@@ -322,7 +349,7 @@ public class Semantico implements Constants {
 		pilha_tipos.push(tipo);
 	}
 
-	private void acao10() {
+	private void acao122() {
 		String tipo1 = pilha_tipos.pop();
 		String tipo2 = pilha_tipos.pop();
 		pilha_tipos.push("bool");
@@ -374,7 +401,7 @@ public class Semantico implements Constants {
 			return (String) value;
 		}
 	}
-
+/*
 	private String getTipoVariavel(String value) {
 		switch (value) {
 		case "_temp_int":
@@ -387,7 +414,22 @@ public class Semantico implements Constants {
 			return bool;
 		}
 		return value;
+	}*/
+	
+	private String getTipoVariavel(String value) {
+	    if (value.startsWith("i_")) {
+	        return int64; // Prefixo "i_" indica o tipo int64
+	    } else if (value.startsWith("f_")) {
+	        return float64; // Prefixo "f_" indica o tipo float64
+	    } else if (value.startsWith("s_")) {
+	        return string; // Prefixo "s_" indica o tipo string
+	    } else if (value.startsWith("b_")) {
+	        return bool; // Prefixo "b_" indica o tipo bool
+	    } else {
+	        throw new IllegalArgumentException("Identificador desconhecido ou tipo não reconhecido: " + value);
+	    }
 	}
+
 
 	public StringBuilder getCodigo() {
 		return codigo;
