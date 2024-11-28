@@ -264,16 +264,29 @@ public class Interface extends JFrame {
     }
 
     private void compilarCodigo() {
-        mensagens.setText(""); // Limpa a área de mensagens antes de compilar
+        mensagens.setText(""); 
         Lexico lexico = new Lexico();        
-        lexico.setInput(editor.getText()); // Define a entrada do analisador léxico
+        lexico.setInput(editor.getText()); 
         Sintatico sintatico = new Sintatico();
 		Semantico semantico = new Semantico();
 
         try {
         	sintatico.parse(lexico, semantico);
-        	mensagens.setText("programa compilado com sucesso");
-        	
+            mensagens.setText("programa compilado com sucesso");
+
+            if (arquivoAtual != null) {
+                try {
+                    String caminhoArquivoIL = arquivoAtual.getAbsolutePath().replace(".txt", "") + ".il";
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(caminhoArquivoIL));
+                    bw.write(semantico.getCodigo().toString());
+                    barraStatus.setText("Código objeto salvo em: " + caminhoArquivoIL);
+                } catch (IOException e1) {
+                    mensagens.setText("Erro ao salvar o código objeto: " + e1.getMessage());
+                    e1.printStackTrace();
+                }
+            } else {
+                mensagens.setText("Erro: o arquivo precisa ser salvo antes da compilação.");
+            }
         }catch (LexicalError e) {
         	int linha = getLineFromPosition(e.getPosition());
 
