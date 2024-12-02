@@ -278,7 +278,9 @@ public class Interface extends JFrame {
                 try {
                     String caminhoArquivoIL = arquivoAtual.getAbsolutePath().replace(".txt", "") + ".il";
                     BufferedWriter bw = new BufferedWriter(new FileWriter(caminhoArquivoIL));
+                    //System.out.println(semantico.getCodigo().toString());
                     bw.write(semantico.getCodigo().toString());
+                    bw.close();
                     barraStatus.setText("Código objeto salvo em: " + caminhoArquivoIL);
                 } catch (IOException e1) {
                     mensagens.setText("Erro ao salvar o código objeto: " + e1.getMessage());
@@ -363,7 +365,7 @@ public class Interface extends JFrame {
 		} catch (SemanticError e) {
 			int linha = getLineFromPosition(e.getPosition());
 
-			mensagens.setText("Erro na linha: " + linha + " - " + e.getMessage());
+			mensagens.setText("Erro na linha: " + (linha + 1) + " - " + e.getMessage());
 		}
 	}
 		
